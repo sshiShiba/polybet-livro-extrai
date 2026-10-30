@@ -58,7 +58,7 @@ def work(arg):
             u_ = f'https://dl.pendulumflow.com/v3/{ds}/{hh}/{ds}T{hh}.parquet'
             return u_ if subprocess.run(['curl', '-sfI', '--retry', '5', u_], capture_output=True).returncode == 0 else None
         for att in range(6):
-            r = subprocess.run(['curl', '-sfL', '--retry', '5', '--retry-delay', '10', '--max-time', '1500', '-o', f,
+            r = subprocess.run(['curl', '-sfL', '--retry', '5', '--retry-delay', '10', '--max-time', '900', '--speed-limit', '2000000', '--speed-time', '60', '-o', f,
                                 f'https://dl.pendulumflow.com/v3/{ds}/{hh}/{ds}T{hh}.parquet'])
             if r.returncode == 0 and os.path.exists(f) and os.path.getsize(f) > 1000:
                 return f

@@ -7,7 +7,7 @@ on:
       nwork: {description: 'processos por job', required: false, default: '2'}
       mode: {description: 'download ou remote', required: false, default: 'download'}
       release: {description: 'tag da Release que recebe as saídas', required: false, default: 'livro'}
-      paralelo: {description: 'max-parallel', required: false, default: '10'}
+      paralelo: {description: 'max-parallel', required: false, default: '5'}
 permissions:
   contents: write
 jobs:

@@ -60,7 +60,7 @@ def work(arg):
         if MODE == 'remote':
             return u if subprocess.run(['curl', '-sfI', '-A', 'curl/8.5.0', '--retry', '5', u], capture_output=True).returncode == 0 else None
         for att in range(6):
-            r = subprocess.run(['curl', '-sfL', '-A', 'curl/8.5.0', '--retry', '5', '--retry-delay', '10', '--max-time', '1500', '-o', f, u])
+            r = subprocess.run(['curl', '-sfL', '-A', 'curl/8.5.0', '--retry', '5', '--retry-delay', '10', '--max-time', '900', '--speed-limit', '2000000', '--speed-time', '60', '-o', f, u])
             if r.returncode == 0 and os.path.exists(f) and os.path.getsize(f) > 1000:
                 return f
             if r.returncode == 22:
