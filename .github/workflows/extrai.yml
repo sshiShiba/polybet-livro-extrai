@@ -1,0 +1,48 @@
+name: extrai
+on:
+  workflow_dispatch:
+    inputs:
+      src: {description: 'v2 (pmxt v2 + ag6) ou v3 (PendulumFlow v3)', required: true, default: 'v2'}
+      blocos: {description: 'JSON [{tag,h0,h1}] gerado por plano.py', required: true}
+      nwork: {description: 'processos por job', required: false, default: '2'}
+      mode: {description: 'download ou remote', required: false, default: 'download'}
+      release: {description: 'tag da Release que recebe as saídas', required: false, default: 'livro'}
+      paralelo: {description: 'max-parallel', required: false, default: '10'}
+permissions:
+  contents: write
+jobs:
+  extrai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(inputs.paralelo) }}
+      matrix:
+        include: ${{ fromJSON(inputs.blocos) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - run: pip install -q -r requirements.txt
+      - name: extrai ${{ matrix.tag }}
+        timeout-minutes: 335
+        env:
+          TAG: ${{ matrix.tag }}
+          H0: ${{ matrix.h0 }}
+          H1: ${{ matrix.h1 }}
+          NWORK: ${{ inputs.nwork }}
+          MODE: ${{ inputs.mode }}
+          CAT: catalog/cat_${{ inputs.src }}.json.gz
+          OUT: out/${{ matrix.tag }}
+          TMPD: ${{ runner.temp }}/t
+        run: |
+          mkdir -p "$OUT" "$TMPD"
+          /usr/bin/time -v python extrai_${{ inputs.src }}.py 2>&1 | tail -n 400 > "$OUT/stdout.txt" || true
+          tail -n 40 "$OUT/stdout.txt"
+      - name: publica
+        if: always()
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          tar -czf ${{ matrix.tag }}.tar.gz -C out ${{ matrix.tag }}
+          ls -la ${{ matrix.tag }}.tar.gz
+          gh release upload "${{ inputs.release }}" ${{ matrix.tag }}.tar.gz --clobber -R "$GITHUB_REPOSITORY"
